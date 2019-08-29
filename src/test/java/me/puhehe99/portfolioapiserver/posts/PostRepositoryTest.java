@@ -21,7 +21,7 @@ public class PostRepositoryTest {
     public void savePost() {
         Post post = Post.builder()
                 .title("제목")
-                .body("내용")
+                .content("내용")
                 .createdDateTime(LocalDateTime.now())
                 .build();
         Post save = postRepository.save(post);
@@ -29,6 +29,6 @@ public class PostRepositoryTest {
         System.out.println(save.getTitle());
         assertThat(save.getId()).isNotNull();
         assertThat(save.getTitle()).isNotNull();
-        assertThat(save.getBody()).isNotNull();
+        assertThat(save.getContent()).isNotNull();
     }
 }

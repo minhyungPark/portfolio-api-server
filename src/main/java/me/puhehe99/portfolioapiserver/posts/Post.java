@@ -15,7 +15,7 @@ public class Post {
     @Id @GeneratedValue
     private Integer id;
     private String title;
-    private String body;
+    private String content;
     private LocalDateTime createdDateTime;
 
 }
