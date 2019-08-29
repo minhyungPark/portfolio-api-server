@@ -1,7 +1,6 @@
 package me.puhehe99.portfolioapiserver.posts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.*;
 import me.puhehe99.portfolioapiserver.common.TestDescription;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,7 +56,7 @@ public class PostControllerTest {
     @Test
     @TestDescription("들어와서는 안되는 값이 들어왔을 때 BadRequest")
     public void createPost_Bad_Request() throws Exception {
-        Post post = Post.builder()
+        PostDto post = PostDto.builder()
                 .title("테스트 제목")
                 .content("테스트 내용")
                 .createdDateTime(LocalDateTime.now())

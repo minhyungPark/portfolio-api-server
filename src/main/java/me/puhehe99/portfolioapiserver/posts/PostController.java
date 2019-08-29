@@ -35,12 +35,12 @@ public class PostController {
     @PostMapping
     public ResponseEntity createPost(@RequestBody @Valid PostDto postDto, Errors errors) {
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(errors);
         }
         Post post = modelMapper.map(postDto, Post.class);
         postValidator.createValidate(post,errors);
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(errors);
         }
 
         post.setCreatedDateTime(LocalDateTime.now());
