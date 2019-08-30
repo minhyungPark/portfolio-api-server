@@ -3,6 +3,7 @@ package me.puhehe99.portfolioapiserver.posts;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -45,8 +46,12 @@ public class PostController {
 
         post.setCreatedDateTime(LocalDateTime.now());
         Post savedPost = this.postRepository.save(post);
-        URI uri = linkTo(PostController.class).slash(savedPost.getId()).toUri();
-        return ResponseEntity.created(uri).body(savedPost);
+        ControllerLinkBuilder linkBuilder = linkTo(PostController.class).slash(savedPost.getId());
+        URI uri = linkBuilder.toUri();
+        PostResource postResource = new PostResource(savedPost);
+        postResource.add(linkTo(PostController.class).withRel("get-posts"));
+        postResource.add(linkBuilder.withRel("update-post"));
+        return ResponseEntity.created(uri).body(postResource);
     }
 
 }

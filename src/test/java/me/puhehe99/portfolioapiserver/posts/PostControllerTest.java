@@ -31,11 +31,11 @@ public class PostControllerTest {
     ObjectMapper objectMapper;
 
     @Test
-    @TestDescription("post를 정상적으로 생성하는 이벤")
+    @TestDescription("post를 정상적으로 생성하는 테스트")
     public void createPost() throws Exception {
         PostDto post = PostDto.builder()
                 .title("test title")
-                .content("test content")
+                .content("<p>test content</p>")
                 .build();
 
         this.mockMvc.perform(post("/api/posts")
@@ -49,7 +49,11 @@ public class PostControllerTest {
                 .andExpect(jsonPath("id").exists())
                 .andExpect(jsonPath("title").value(post.getTitle()))
                 .andExpect(jsonPath("content").value(post.getContent()))
-                .andExpect(jsonPath("createdDateTime").exists());
+                .andExpect(jsonPath("createdDateTime").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.get-posts").exists())
+                .andExpect(jsonPath("_links.update-post").exists())
+        ;
 
     }
 
