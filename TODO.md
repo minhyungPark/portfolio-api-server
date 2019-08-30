@@ -15,7 +15,7 @@
 
 **Index**
 
-- [ ] index handler 만들기
+- [x] index handler 만들기
 
 **common**
 

@@ -1,6 +1,7 @@
 package me.puhehe99.portfolioapiserver.posts;
 
 
+import me.puhehe99.portfolioapiserver.common.ErrorsResource;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -37,12 +38,12 @@ public class PostController {
     @PostMapping
     public ResponseEntity createPost(@RequestBody @Valid PostDto postDto, Errors errors) {
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return ResponseEntity.badRequest().body(new ErrorsResource(errors));
         }
         Post post = modelMapper.map(postDto, Post.class);
         postValidator.createValidate(post,errors);
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return ResponseEntity.badRequest().body(new ErrorsResource(errors));
         }
 
         post.setCreatedDateTime(LocalDateTime.now());

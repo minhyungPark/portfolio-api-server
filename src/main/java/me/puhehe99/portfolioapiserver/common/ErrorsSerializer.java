@@ -9,7 +9,7 @@ import org.springframework.validation.Errors;
 import java.io.IOException;
 
 @JsonComponent
-public class ErrorSerializer extends JsonSerializer<Errors> {
+public class ErrorsSerializer extends JsonSerializer<Errors> {
     @Override
     public void serialize(Errors errors, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeStartArray();
