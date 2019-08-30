@@ -2,6 +2,7 @@ package me.puhehe99.portfolioapiserver.posts;
 
 
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,7 @@ public class PostController {
         PostResource postResource = new PostResource(savedPost);
         postResource.add(linkTo(PostController.class).withRel("get-posts"));
         postResource.add(linkBuilder.withRel("update-post"));
+        postResource.add(new Link("/docs/index.html#resources-posts-create").withRel("profile"));
         return ResponseEntity.created(uri).body(postResource);
     }
 
