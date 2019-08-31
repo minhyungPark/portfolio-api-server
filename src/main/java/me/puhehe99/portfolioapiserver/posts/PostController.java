@@ -3,12 +3,17 @@ package me.puhehe99.portfolioapiserver.posts;
 
 import me.puhehe99.portfolioapiserver.common.ErrorsResource;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
@@ -55,6 +61,14 @@ public class PostController {
         postResource.add(linkBuilder.withRel("update-post"));
         postResource.add(new Link("/docs/index.html#resources-posts-create").withRel("profile"));
         return ResponseEntity.created(uri).body(postResource);
+    }
+
+    @GetMapping
+    public ResponseEntity getPosts(Pageable pageable, PagedResourcesAssembler<Post> assembler) {
+        Page<Post> postPage = this.postRepository.findAll(pageable);
+        PagedResources<PostResource> postResources = assembler.toResource(postPage, entity -> new PostResource(entity));
+        postResources.add(new Link("/docs/index.html#resources-posts-list").withRel("profile"));
+        return ResponseEntity.ok(postResources);
     }
 
 }

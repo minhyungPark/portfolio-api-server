@@ -24,6 +24,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -41,6 +42,9 @@ public class PostControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    PostRepository postRepository;
 
     @Test
     @TestDescription("post를 정상적으로 생성하는 테스트")
@@ -150,5 +154,29 @@ public class PostControllerTest {
 
     }
 
+    @Test
+    public void getPosts() throws Exception {
+        // Given
+        for(int i=0;i<30;++i) {
+            Post post = Post.builder()
+                    .title("test title" + i)
+                    .content("test content" + i)
+                    .createdDateTime(LocalDateTime.now())
+                    .build();
+            this.postRepository.save(post);
+        }
+
+        this.mockMvc.perform(get("/api/posts")
+                .param("page","1")
+                .param("size","10")
+                .param("sort","title,DESC"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("_embedded.postList").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("get-posts"))
+        ;
+    }
 
 }
