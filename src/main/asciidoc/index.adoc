@@ -104,7 +104,7 @@ operation::index[snippets='response-body,http-response,links']
 
 `GET` 요청을 사용하여 서비스의 모든 포스트를 조회할 수 있다.
 
-operation::get-events[snippets='response-fields,curl-request,http-response,links']
+operation::get-posts[snippets='response-fields,curl-request,http-response,links']
 
 [[resources-posts-create]]
 === 포스트 생성
@@ -113,15 +113,15 @@ operation::get-events[snippets='response-fields,curl-request,http-response,links
 
 operation::create-post[snippets='request-fields,curl-request,http-request,request-headers,http-response,response-headers,response-fields,links']
 
-[[resources-events-get]]
+[[resources-posts-get]]
 === 포스트 조회
 
 `Get` 요청을 사용해서 기존 포스트 하나를 조회할 수 있다.
 
-operation::get-event[snippets='request-fields,curl-request,http-response,links']
+operation::get-post[snippets='request-fields,curl-request,http-response,links']
 
 [[resources-events-update]]
-=== 이벤트 수정
+=== 포스트 수정
 
 `PUT` 요청을 사용해서 기존 포스트를 수정할 수 있다.
 

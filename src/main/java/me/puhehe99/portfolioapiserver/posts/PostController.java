@@ -13,15 +13,13 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
@@ -69,6 +67,18 @@ public class PostController {
         PagedResources<PostResource> postResources = assembler.toResource(postPage, entity -> new PostResource(entity));
         postResources.add(new Link("/docs/index.html#resources-posts-list").withRel("profile"));
         return ResponseEntity.ok(postResources);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity getPost(@PathVariable Integer id) {
+        Optional<Post> optionalPost = this.postRepository.findById(id);
+        if (optionalPost.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Post post = optionalPost.get();
+        PostResource postResource = new PostResource(post);
+        postResource.add(new Link("/docs/index.html#resources-posts-get").withRel("profile"));
+        return ResponseEntity.ok(postResource);
     }
 
 }

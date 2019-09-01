@@ -3,6 +3,7 @@ package me.puhehe99.portfolioapiserver.posts;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.puhehe99.portfolioapiserver.common.RestDocsConfiguration;
 import me.puhehe99.portfolioapiserver.common.TestDescription;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,6 +178,41 @@ public class PostControllerTest {
                 .andExpect(jsonPath("_links.profile").exists())
                 .andDo(document("get-posts"))
         ;
+    }
+
+    @Test
+    @TestDescription("이벤트 하나를 받는 테스트")
+    public void getPost() throws Exception {
+        // Given
+        Post testPost = Post.builder()
+                .title("test title")
+                .content("<p>test content</p>")
+                .createdDateTime(LocalDateTime.now())
+                .build();
+        Post savedPost = this.postRepository.save(testPost);
+
+        // When & Then
+        this.mockMvc.perform(get("/api/posts/{id}",savedPost.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(savedPost.getId()))
+                .andExpect(jsonPath("title").value(savedPost.getTitle()))
+                .andExpect(jsonPath("content").value(savedPost.getContent()))
+                .andExpect(jsonPath("createdDateTime").value(savedPost.getCreatedDateTime().toString()))
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("get-post"))
+        ;
+    }
+
+    @Test
+    @TestDescription("없는 이벤트롤 조회했을 경우 Not Found")
+    public void getPost404() throws Exception {
+
+        this.mockMvc.perform(get("/api/posts/321123"))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+
     }
 
 }
