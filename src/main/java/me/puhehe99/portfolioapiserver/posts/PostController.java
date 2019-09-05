@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -80,5 +81,24 @@ public class PostController {
         postResource.add(new Link("/docs/index.html#resources-posts-get").withRel("profile"));
         return ResponseEntity.ok(postResource);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity updatePost(@PathVariable Integer id, @RequestBody PostDto postDto, Errors errors) {
+
+        Optional<Post> optionalPost = this.postRepository.findById(id);
+        if (optionalPost.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Post post = this.modelMapper.map(postDto, Post.class);
+        post.setId(id);
+        post.setModifiedDateTime(LocalDateTime.now());
+        post.setCreatedDateTime(optionalPost.get().getCreatedDateTime());
+        Post updatedPost = this.postRepository.save(post);
+        PostResource postResource = new PostResource(updatedPost);
+        postResource.add(new Link("docs/index.html#resources-events-update").withRel("profile"));
+        return ResponseEntity.ok(postResource);
+    }
+
 
 }

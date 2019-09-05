@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
 
 @Data @NoArgsConstructor @AllArgsConstructor
 @Builder
@@ -15,5 +14,4 @@ public class PostDto {
     private String title;
     @NotBlank
     private String content;
-    private LocalDateTime createdDateTime;
 }

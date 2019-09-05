@@ -9,9 +9,9 @@
 - [x] 필수로 필요로 하는 값이 없을 때 BadRequest로 응답
 - [x] HATEOAS 적용
 - [x] REST Docs 적용
-- [ ] `/api/posts` GET 구현
-- [ ] `/api/posts/{id}` GET 구현
-- [ ] `/api/posts/{id}` UPDATE 구현
+- [x] `/api/posts` GET 구현
+- [x] `/api/posts/{id}` GET 구현
+- [x] `/api/posts/{id}` UPDATE 구현
 
 **Index**
 
@@ -20,3 +20,9 @@
 **common**
 
 - [x] Test 와 실제 환경의 DB 분리
+
+**Portfolio**
+
+- [ ] Portfolio 도메인 구현
+- [ ] CRUD 구현
+

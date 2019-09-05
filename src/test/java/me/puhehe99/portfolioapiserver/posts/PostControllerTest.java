@@ -3,7 +3,6 @@ package me.puhehe99.portfolioapiserver.posts;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.puhehe99.portfolioapiserver.common.RestDocsConfiguration;
 import me.puhehe99.portfolioapiserver.common.TestDescription;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +24,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -94,6 +92,7 @@ public class PostControllerTest {
                                 fieldWithPath("title").description("title of post"),
                                 fieldWithPath("content").description("content of post"),
                                 fieldWithPath("createdDateTime").description("created time of post"),
+                                fieldWithPath("modifiedDateTime").description("modified time of post"),
                                 fieldWithPath("_links.self.href").description("link of self"),
                                 fieldWithPath("_links.get-posts.href").description("link to get posts"),
                                 fieldWithPath("_links.update-post.href").description("link to update post"),
@@ -103,23 +102,6 @@ public class PostControllerTest {
                         ))
         ;
 
-    }
-
-    @Test
-    @TestDescription("들어와서는 안되는 값이 들어왔을 때 BadRequest")
-    public void createPost_Bad_Request() throws Exception {
-        PostDto post = PostDto.builder()
-                .title("테스트 제목")
-                .content("테스트 내용")
-                .createdDateTime(LocalDateTime.now())
-                .build();
-
-        this.mockMvc.perform(post("/api/posts")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
-                        .content(objectMapper.writeValueAsString(post)))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -206,7 +188,7 @@ public class PostControllerTest {
     }
 
     @Test
-    @TestDescription("없는 이벤트롤 조회했을 경우 Not Found")
+    @TestDescription("없는 포스트를 조회했을 경우 Not Found")
     public void getPost404() throws Exception {
 
         this.mockMvc.perform(get("/api/posts/321123"))
@@ -214,5 +196,59 @@ public class PostControllerTest {
                 .andExpect(status().isNotFound());
 
     }
+
+    @Test
+    @TestDescription("포스트를 정상적으로 수정")
+    public void updatePost() throws Exception {
+        // Given
+
+        Post post = Post.builder()
+                .title("test title")
+                .content("test content")
+                .createdDateTime(LocalDateTime.now())
+                .build();
+        Post savedPost = this.postRepository.save(post);
+
+        PostDto updatePost = PostDto.builder()
+                .title("update title")
+                .content("update content")
+                .build();
+
+        // When
+        this.mockMvc.perform(put("/api/posts/{id}",savedPost.getId())
+                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
+                    .content(objectMapper.writeValueAsString(updatePost)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("title").value(updatePost.getTitle()))
+                .andExpect(jsonPath("content").value(updatePost.getContent()))
+                .andExpect(jsonPath("createdDateTime").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andExpect(jsonPath("_links.self").exists())
+        ;
+    }
+
+    @Test
+    @TestDescription("없는 post를 수정할 때 404")
+    public void updatePost_404() throws Exception {
+
+        PostDto postDto = PostDto.builder()
+                .title("test title")
+                .content("test content")
+                .build();
+
+        this.mockMvc.perform(put("/api/posts/1231231")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
+                .content(objectMapper.writeValueAsString(postDto)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+        ;
+
+    }
+
+
 
 }
