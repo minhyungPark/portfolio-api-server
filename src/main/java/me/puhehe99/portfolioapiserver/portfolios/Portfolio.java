@@ -3,6 +3,7 @@ package me.puhehe99.portfolioapiserver.portfolios;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Builder @EqualsAndHashCode(of = "id")
@@ -28,4 +29,6 @@ public class Portfolio {
     private AlgoSite algoSite;
 
     private String problemUrl;
+
+    private LocalDateTime createdDateTime;
 }
