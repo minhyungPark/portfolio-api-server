@@ -17,6 +17,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,7 +41,7 @@ public class PortfolioControllerTest {
     @Test
     @TestDescription("portfolio 를 정상적으로 생성")
     public void createPortfolio() throws Exception{
-        Portfolio portfolio = Portfolio.builder()
+        PortfolioDto portfolio = PortfolioDto.builder()
                 .title("portfolio title")
                 .content("<p>content</p>")
                 .algoSite(AlgoSite.BAEKJOON)
@@ -68,6 +70,53 @@ public class PortfolioControllerTest {
                 .andExpect(jsonPath("createdDateTime").exists())
                 .andExpect(jsonPath("_links.self").exists())
         ;
+    }
+
+    @Test
+    @TestDescription("portfolio 생성시 입력값 제한")
+    public void createPortfolioWithBadRequest() throws Exception{
+        Portfolio portfolio = Portfolio.builder()
+                .id(100)
+                .title("portfolio title")
+                .content("<p>content</p>")
+                .algoSite(AlgoSite.BAEKJOON)
+                .sourceCode("int a=0;")
+                .language("java")
+                .problemUrl("https://localhost:8080")
+                .imgUrl("https://0gichul.com/files/attach/images/204/125/877/003/79160512de6dcb7eab93212a13d56fad.jpg")
+                .codeStyle("default")
+                .createdDateTime(LocalDateTime.now())
+                .build();
+
+        this.mockMvc.perform(post("/api/portfolio")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
+                .content(objectMapper.writeValueAsString(portfolio)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    @TestDescription("생성시 필수 값이 빠져있는 경우 BadRequest")
+    public void createPortfolio_Empty_Input_with_BadRequest() throws Exception{
+        PortfolioDto portfolio = PortfolioDto.builder()
+                .title("")
+                .content("<p>content</p>")
+                .algoSite(AlgoSite.BAEKJOON)
+                .sourceCode("int a=0;")
+                .language("java")
+                .problemUrl("https://localhost:8080")
+                .imgUrl("https://0gichul.com/files/attach/images/204/125/877/003/79160512de6dcb7eab93212a13d56fad.jpg")
+                .codeStyle("default")
+                .build();
+
+        this.mockMvc.perform(post("/api/portfolio")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
+                .content(objectMapper.writeValueAsString(portfolio)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
 }
