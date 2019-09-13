@@ -2,9 +2,15 @@ package me.puhehe99.portfolioapiserver.portfolios;
 
 import me.puhehe99.portfolioapiserver.common.ErrorsResource;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +22,7 @@ import java.time.LocalDateTime;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 @Controller
-@RequestMapping(value = "/api/portfolio")
+@RequestMapping(value = "/api/portfolios")
 public class PortfolioController {
 
     private PortfolioRepository portfolioRepository;
@@ -39,6 +45,16 @@ public class PortfolioController {
         Portfolio savedPortfolio = portfolioRepository.save(portfolio);
         URI uri = linkTo(PortfolioController.class).slash(savedPortfolio.getId()).toUri();
         PortfolioResource portfolioResource = new PortfolioResource(savedPortfolio);
+        portfolioResource.add(new Link("/docs/index.html#resources-portfolios-create").withRel("profile"));
         return ResponseEntity.created(uri).body(portfolioResource);
     }
+
+    @GetMapping
+    public ResponseEntity getPortfolios(Pageable pageable, PagedResourcesAssembler<Portfolio> assembler) {
+        Page<Portfolio> portfolioPage = this.portfolioRepository.findAll(pageable);
+        PagedResources pagedResources = assembler.toResource(portfolioPage, entity -> new PortfolioResource(entity));
+        pagedResources.add(new Link("/docs/index.html#resources-portfolios-list").withRel("profile"));
+        return ResponseEntity.ok(pagedResources);
+    }
+
 }

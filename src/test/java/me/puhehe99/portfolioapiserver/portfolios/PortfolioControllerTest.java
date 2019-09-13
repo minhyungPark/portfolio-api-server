@@ -11,14 +11,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.stream.IntStream;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,6 +39,9 @@ public class PortfolioControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    PortfolioRepository portfolioRepository;
+
     @Test
     @TestDescription("portfolio 를 정상적으로 생성")
     public void createPortfolio() throws Exception{
@@ -52,7 +56,7 @@ public class PortfolioControllerTest {
                 .codeStyle("default")
                 .build();
 
-        this.mockMvc.perform(post("/api/portfolio")
+        this.mockMvc.perform(post("/api/portfolios")
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
                     .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                     .content(objectMapper.writeValueAsString(portfolio)))
@@ -88,7 +92,7 @@ public class PortfolioControllerTest {
                 .createdDateTime(LocalDateTime.now())
                 .build();
 
-        this.mockMvc.perform(post("/api/portfolio")
+        this.mockMvc.perform(post("/api/portfolios")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                 .content(objectMapper.writeValueAsString(portfolio)))
@@ -111,12 +115,47 @@ public class PortfolioControllerTest {
                 .codeStyle("default")
                 .build();
 
-        this.mockMvc.perform(post("/api/portfolio")
+        this.mockMvc.perform(post("/api/portfolios")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                 .content(objectMapper.writeValueAsString(portfolio)))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @TestDescription("portfolio 리스트를 불러오기")
+    public void getPortfolios() throws Exception {
+        // Given
+        IntStream.range(0,30).forEach(this::generatePortfolio);
+
+        // When & Then
+        this.mockMvc.perform(get("/api/portfolios")
+                    .param("page","1")
+                    .param("size","10")
+                    .param("sort","title,DESC"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("_embedded.portfolioList").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                ;
+    }
+
+    private void generatePortfolio(int index) {
+        Portfolio portfolio = Portfolio.builder()
+                .title("portfolio title" + index)
+                .content("<p>content</p>" + index)
+                .algoSite(AlgoSite.BAEKJOON)
+                .sourceCode("int a=0;")
+                .language("java")
+                .problemUrl("https://localhost:8080")
+                .imgUrl("https://0gichul.com/files/attach/images/204/125/877/003/79160512de6dcb7eab93212a13d56fad.jpg")
+                .codeStyle("default")
+                .createdDateTime(LocalDateTime.now())
+                .build();
+        this.portfolioRepository.save(portfolio);
+    }
+
 
 }
