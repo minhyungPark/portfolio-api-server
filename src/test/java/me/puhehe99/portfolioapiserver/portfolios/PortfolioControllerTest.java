@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -19,6 +20,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.stream.IntStream;
 
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -73,6 +79,45 @@ public class PortfolioControllerTest {
                 .andExpect(jsonPath("imgUrl").exists())
                 .andExpect(jsonPath("createdDateTime").exists())
                 .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("create-portfolio",
+                        links(
+                                linkWithRel("self").description("link to description"),
+                                linkWithRel("profile").description("link to profile")
+                        ),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header"),
+                                headerWithName(HttpHeaders.ACCEPT).description("accept header")
+                        ),
+                        requestFields(
+                                fieldWithPath("title").description("title of portfolio"),
+                                fieldWithPath("content").description("content of portfolio"),
+                                fieldWithPath("imgUrl").description("image url of portfolio"),
+                                fieldWithPath("algoSite").description("site of algorithm problem"),
+                                fieldWithPath("sourceCode").description("source code of portfolio"),
+                                fieldWithPath("language").description("language of source code"),
+                                fieldWithPath("problemUrl").description("url of problem"),
+                                fieldWithPath("codeStyle").description("style of code theme")
+                        ),
+                        responseHeaders(
+                                headerWithName(HttpHeaders.LOCATION).description("location header"),
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").description("identifier of portfolio"),
+                                fieldWithPath("title").description("title of portfolio"),
+                                fieldWithPath("content").description("content of portfolio"),
+                                fieldWithPath("imgUrl").description("content of portfolio"),
+                                fieldWithPath("algoSite").description("site of algorithm problem"),
+                                fieldWithPath("sourceCode").description("source code of portfolio"),
+                                fieldWithPath("language").description("language of source code"),
+                                fieldWithPath("problemUrl").description("url of problem"),
+                                fieldWithPath("codeStyle").description("style of code theme"),
+                                fieldWithPath("createdDateTime").description("created time of portfolio"),
+                                fieldWithPath("_links.self.href").description("link of self"),
+                                fieldWithPath("_links.profile.href").description("link of profile")
+                        )
+                ))
         ;
     }
 
