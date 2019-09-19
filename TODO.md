@@ -23,6 +23,15 @@
 
 **Portfolio**
 
-- [ ] Portfolio 도메인 구현
-- [ ] CRUD 구현
+- [x] Portfolio 도메인 구현
+- [x] `/api/portfolios` POST
+- [x] `/api/portfolios` GET
+- [x] `/api/portfolios/{id}` GET
+- [ ] `/api/portfolios` PUT
 
+**comment**
+- [ ] Post의 댓글 CRUD
+- [ ] Portfolio의 댓글 CRUD
+
+**Account**
+- [ ] 회원 기능 추가
