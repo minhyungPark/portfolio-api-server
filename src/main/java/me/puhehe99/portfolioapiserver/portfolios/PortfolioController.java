@@ -10,14 +10,12 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
@@ -55,6 +53,20 @@ public class PortfolioController {
         PagedResources pagedResources = assembler.toResource(portfolioPage, entity -> new PortfolioResource(entity));
         pagedResources.add(new Link("/docs/index.html#resources-portfolios-list").withRel("profile"));
         return ResponseEntity.ok(pagedResources);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity getPortfolio(@PathVariable Integer id) {
+        Optional<Portfolio> optionalPortfolio = this.portfolioRepository.findById(id);
+        if (optionalPortfolio.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Portfolio portfolio = optionalPortfolio.get();
+        PortfolioResource portfolioResource = new PortfolioResource(portfolio);
+        portfolioResource.add(new Link("/docs/index.html#resources-portfolios-get").withRel("profile"));
+
+        return ResponseEntity.ok(portfolioResource);
     }
 
 }
