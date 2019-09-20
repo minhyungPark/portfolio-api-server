@@ -41,6 +41,7 @@ public class PortfolioController {
         Portfolio portfolio = modelMapper.map(portfolioDto, Portfolio.class);
         portfolio.setCreatedDateTime(LocalDateTime.now());
         Portfolio savedPortfolio = portfolioRepository.save(portfolio);
+
         URI uri = linkTo(PortfolioController.class).slash(savedPortfolio.getId()).toUri();
         PortfolioResource portfolioResource = new PortfolioResource(savedPortfolio);
         portfolioResource.add(new Link("/docs/index.html#resources-portfolios-create").withRel("profile"));
@@ -66,6 +67,28 @@ public class PortfolioController {
         PortfolioResource portfolioResource = new PortfolioResource(portfolio);
         portfolioResource.add(new Link("/docs/index.html#resources-portfolios-get").withRel("profile"));
 
+        return ResponseEntity.ok(portfolioResource);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity updatePortfolio(@PathVariable Integer id,
+                                          @RequestBody @Valid PortfolioDto portfolioDto,
+                                          Errors errors) {
+        Optional<Portfolio> optionalPortfolio = this.portfolioRepository.findById(id);
+        if (optionalPortfolio.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if(errors.hasErrors()) {
+            return ResponseEntity.badRequest().body(new ErrorsResource(errors));
+        }
+
+        Portfolio existingPortfolio = optionalPortfolio.get();
+        this.modelMapper.map(portfolioDto, existingPortfolio);
+        existingPortfolio.setModifiedDateTime(LocalDateTime.now());
+        Portfolio savedPortfolio = this.portfolioRepository.save(existingPortfolio);
+
+        PortfolioResource portfolioResource = new PortfolioResource(savedPortfolio);
+        portfolioResource.add(new Link("/docs/index.html#resources-portfolios-update").withRel("profile"));
         return ResponseEntity.ok(portfolioResource);
     }
 

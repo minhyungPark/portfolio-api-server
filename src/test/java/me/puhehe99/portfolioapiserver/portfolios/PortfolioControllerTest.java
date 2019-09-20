@@ -27,8 +27,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -116,6 +115,7 @@ public class PortfolioControllerTest {
                                 fieldWithPath("problemUrl").description("url of problem"),
                                 fieldWithPath("codeStyle").description("style of code theme"),
                                 fieldWithPath("createdDateTime").description("created time of portfolio"),
+                                fieldWithPath("modifiedDateTime").description("modified time of portfolio"),
                                 fieldWithPath("_links.self.href").description("link of self"),
                                 fieldWithPath("_links.profile.href").description("link of profile")
                         )
@@ -246,5 +246,39 @@ public class PortfolioControllerTest {
         this.mockMvc.perform(get("/api/portfolios/{id}",123123))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @TestDescription("기존의 portfolio 정상적으로 수정")
+    public void updatePortfolio() throws Exception {
+        // Given
+        Portfolio savePortfolio = this.savePortfolio(1);
+
+        PortfolioDto portfolioDto = PortfolioDto.builder()
+                .title("Modified title")
+                .content("<p>modified content</p>")
+                .algoSite(AlgoSite.BAEKJOON)
+                .sourceCode("int a=0; int b=0;")
+                .language("java")
+                .problemUrl("https://localhost:8080")
+                .imgUrl("https://picsum.photos/200/300")
+                .codeStyle("default")
+                .build();
+
+        this.mockMvc.perform(put("/api/portfolios/{id}",savePortfolio.getId())
+                                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                                .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
+                                .content(objectMapper.writeValueAsString(portfolioDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("title").exists())
+                .andExpect(jsonPath("createdDateTime").exists())
+                .andExpect(jsonPath("modifiedDateTime").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andDo(document("update-portfolio"))
+        ;
+
     }
 }

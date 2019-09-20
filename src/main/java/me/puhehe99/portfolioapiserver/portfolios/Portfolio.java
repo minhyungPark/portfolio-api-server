@@ -31,4 +31,6 @@ public class Portfolio {
     private String problemUrl;
 
     private LocalDateTime createdDateTime;
+
+    private LocalDateTime modifiedDateTime;
 }

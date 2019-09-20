@@ -27,7 +27,7 @@
 - [x] `/api/portfolios` POST
 - [x] `/api/portfolios` GET
 - [x] `/api/portfolios/{id}` GET
-- [ ] `/api/portfolios` PUT
+- [x] `/api/portfolios/{id}` PUT
 
 **comment**
 - [ ] Post의 댓글 CRUD
