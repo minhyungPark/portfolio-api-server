@@ -15,11 +15,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -83,11 +81,15 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updatePost(@PathVariable Integer id, @RequestBody PostDto postDto, Errors errors) {
+    public ResponseEntity updatePost(@PathVariable Integer id, @RequestBody @Valid PostDto postDto, Errors errors) {
 
         Optional<Post> optionalPost = this.postRepository.findById(id);
         if (optionalPost.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+
+        if (errors.hasErrors()) {
+            return ResponseEntity.badRequest().body(new ErrorsResource(errors));
         }
 
         Post post = this.modelMapper.map(postDto, Post.class);
