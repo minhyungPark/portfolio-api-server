@@ -1,6 +1,7 @@
 package me.puhehe99.portfolioapiserver.portfolios;
 
 import lombok.*;
+import me.puhehe99.portfolioapiserver.accounts.Account;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -33,4 +34,7 @@ public class Portfolio {
     private LocalDateTime createdDateTime;
 
     private LocalDateTime modifiedDateTime;
+
+    @ManyToOne
+    private Account manager;
 }
