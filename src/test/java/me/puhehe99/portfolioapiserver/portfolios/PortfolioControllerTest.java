@@ -1,21 +1,17 @@
 package me.puhehe99.portfolioapiserver.portfolios;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.puhehe99.portfolioapiserver.common.RestDocsConfiguration;
+import me.puhehe99.portfolioapiserver.accounts.AccountService;
+import me.puhehe99.portfolioapiserver.common.BaseControllerTest;
 import me.puhehe99.portfolioapiserver.common.TestDescription;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
 import java.util.stream.IntStream;
@@ -27,18 +23,13 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class PortfolioControllerTest {
+public class PortfolioControllerTest extends BaseControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -48,6 +39,20 @@ public class PortfolioControllerTest {
 
     @Autowired
     PortfolioRepository portfolioRepository;
+
+    @Autowired
+    AccountService accountService;
+
+    public String getBearerToken() throws Exception {
+        ResultActions perform = this.mockMvc.perform(post("/oauth/token")
+                .with(httpBasic("myApp", "pass"))
+                .param("username", "user@email.com")
+                .param("password", "1212")
+                .param("grant_type", "password"));
+        var responseBody = perform.andReturn().getResponse().getContentAsString();
+        Jackson2JsonParser parser = new Jackson2JsonParser();
+        return "Bearer "+ parser.parseMap(responseBody).get("access_token").toString();
+    }
 
     @Test
     @TestDescription("portfolio 를 정상적으로 생성")
@@ -64,7 +69,8 @@ public class PortfolioControllerTest {
                 .build();
 
         this.mockMvc.perform(post("/api/portfolios")
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
                     .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                     .content(objectMapper.writeValueAsString(portfolio)))
                 .andDo(print())
@@ -116,6 +122,7 @@ public class PortfolioControllerTest {
                                 fieldWithPath("codeStyle").description("style of code theme"),
                                 fieldWithPath("createdDateTime").description("created time of portfolio"),
                                 fieldWithPath("modifiedDateTime").description("modified time of portfolio"),
+                                fieldWithPath("manager").description("manager of portfolio"),
                                 fieldWithPath("_links.self.href").description("link of self"),
                                 fieldWithPath("_links.profile.href").description("link of profile")
                         )
@@ -140,6 +147,7 @@ public class PortfolioControllerTest {
                 .build();
 
         this.mockMvc.perform(post("/api/portfolios")
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                 .content(objectMapper.writeValueAsString(portfolio)))
@@ -163,6 +171,7 @@ public class PortfolioControllerTest {
                 .build();
 
         this.mockMvc.perform(post("/api/portfolios")
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                 .content(objectMapper.writeValueAsString(portfolio)))
@@ -266,6 +275,7 @@ public class PortfolioControllerTest {
                 .build();
 
         this.mockMvc.perform(put("/api/portfolios/{id}",savePortfolio.getId())
+                                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                                 .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                                 .content(objectMapper.writeValueAsString(portfolioDto)))

@@ -1,21 +1,17 @@
 package me.puhehe99.portfolioapiserver.posts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.puhehe99.portfolioapiserver.common.RestDocsConfiguration;
+import me.puhehe99.portfolioapiserver.accounts.AccountService;
+import me.puhehe99.portfolioapiserver.common.BaseControllerTest;
 import me.puhehe99.portfolioapiserver.common.TestDescription;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
 
@@ -24,17 +20,12 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class PostControllerTest {
+public class PostControllerTest extends BaseControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -45,6 +36,20 @@ public class PostControllerTest {
     @Autowired
     PostRepository postRepository;
 
+    @Autowired
+    AccountService accountService;
+
+    public String getBearerToken() throws Exception {
+        ResultActions perform = this.mockMvc.perform(post("/oauth/token")
+                .with(httpBasic("myApp", "pass"))
+                .param("username", "user@email.com")
+                .param("password", "1212")
+                .param("grant_type", "password"));
+        var responseBody = perform.andReturn().getResponse().getContentAsString();
+        Jackson2JsonParser parser = new Jackson2JsonParser();
+        return "Bearer "+ parser.parseMap(responseBody).get("access_token").toString();
+    }
+
     @Test
     @TestDescription("post를 정상적으로 생성하는 테스트")
     public void createPost() throws Exception {
@@ -54,6 +59,7 @@ public class PostControllerTest {
                 .build();
 
         this.mockMvc.perform(post("/api/posts")
+                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                         .content(objectMapper.writeValueAsString(post)))
@@ -93,6 +99,7 @@ public class PostControllerTest {
                                 fieldWithPath("content").description("content of post"),
                                 fieldWithPath("createdDateTime").description("created time of post"),
                                 fieldWithPath("modifiedDateTime").description("modified time of post"),
+                                fieldWithPath("manager").description("manager of post"),
                                 fieldWithPath("_links.self.href").description("link of self"),
                                 fieldWithPath("_links.get-posts.href").description("link to get posts"),
                                 fieldWithPath("_links.update-post.href").description("link to update post"),
@@ -114,6 +121,7 @@ public class PostControllerTest {
                 .build();
 
         this.mockMvc.perform(post("/api/posts")
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                 .content(objectMapper.writeValueAsString(post)))
@@ -129,6 +137,7 @@ public class PostControllerTest {
                 .build();
 
         this.mockMvc.perform(post("/api/posts")
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                 .content(objectMapper.writeValueAsString(post)))
@@ -216,6 +225,7 @@ public class PostControllerTest {
 
         // When
         this.mockMvc.perform(put("/api/posts/{id}",savedPost.getId())
+                    .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
                     .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                     .content(objectMapper.writeValueAsString(updatePost)))
@@ -240,6 +250,7 @@ public class PostControllerTest {
                 .build();
 
         this.mockMvc.perform(put("/api/posts/1231231")
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON_UTF8_VALUE)
                 .content(objectMapper.writeValueAsString(postDto)))

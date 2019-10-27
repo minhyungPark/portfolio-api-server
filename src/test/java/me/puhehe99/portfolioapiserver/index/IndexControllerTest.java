@@ -1,5 +1,6 @@
 package me.puhehe99.portfolioapiserver.index;
 
+import me.puhehe99.portfolioapiserver.common.BaseControllerTest;
 import me.puhehe99.portfolioapiserver.common.RestDocsConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,12 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-public class IndexControllerTest {
+public class IndexControllerTest extends BaseControllerTest {
 
     @Autowired
     MockMvc mockMvc;
